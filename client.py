@@ -65,8 +65,6 @@ class ClientConnectionThread(threading.Thread):
                     proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=received_from_local, headers={str("Session-Id"): self.session_id}, proxies = proxies)
                     client_timeout = 0
                     client_timestamp = current_timestamp
-                    
-                time.sleep(1)
                   
                 # Disconnect client who passed CLIENT_TIMEOUT variable value
                 if client_timeout > CLIENT_TIMEOUT:
