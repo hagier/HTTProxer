@@ -17,7 +17,7 @@ import traceback
 
 # Here comes your (few) global variables
 BIND_ADDRESS = '0.0.0.0'
-BIND_PORT = 8080
+BIND_PORT = 80
 
 REMOTE_ADDRESS = '127.0.0.1'
 REMOTE_PORT = 22
@@ -60,7 +60,7 @@ class ServerConnectionThread(threading.Thread):
             print("Joining outgoing messages...")
             messages = ';'.join(self.outgoing_messages)
         elif len(self.outgoing_messages) == 1:
-            print("Joining 111111111 outgoing messages...")
+            print("Joining 1 outgoing message...")
             messages = self.outgoing_messages[0]
         else:
             messages = ""
@@ -85,6 +85,8 @@ class ServerConnectionThread(threading.Thread):
                 break
             except socket.timeout:
                 pass
+            except ConnectionAbortedError:
+                raise
             except:
                 traceback.print_exc()
                 break
@@ -151,7 +153,7 @@ class HTTProxerRequestHandler(http.server.BaseHTTPRequestHandler):
             # Send HTTP response
             self._set_headers()
             messages_to_send = connection_thread.receive_messages()
-            print(f"Sending full response: {messages_to_send}")
+            print(f"Sending full response: {messages_to_send} [type:", type(messages_to_send), "]")
             self.wfile.write(self._html(messages_to_send))
         except:
             traceback.print_exc()
