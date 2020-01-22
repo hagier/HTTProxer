@@ -19,8 +19,8 @@ import time
 BIND_ADDRESS = '127.0.0.1'
 BIND_PORT = 9999
 
-SERVER_ADDRESS = '127.0.0.1'
-SERVER_PORT = 8080
+SERVER_ADDRESS = 'testtest'
+SERVER_PORT = 80
 
 CLIENT_TIMEOUT = 60
  
@@ -54,9 +54,9 @@ class ClientConnectionThread(threading.Thread):
                 
                 current_timestamp = time.time()
                 proxy_response = None
+                proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=b'', headers={str("Session-Id"): self.session_id}, proxies = proxies)
                 if not received_from_local:
-                    if (current_timestamp-client_timestamp)/1.0 > client_timeout/CLIENT_TIMEOUT:
-                        proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=b'', headers={str("Session-Id"): self.session_id}, proxies = proxies)
+                    #if (current_timestamp-client_timestamp)/1.0 > client_timeout/CLIENT_TIMEOUT:
                     if (current_timestamp-client_timestamp) > 1.0:
                         client_timeout += 1
                         client_timestamp = current_timestamp
@@ -64,7 +64,7 @@ class ClientConnectionThread(threading.Thread):
                     else:
                         continue
                 else:
-                    proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=received_from_local, headers={str("Session-Id"): self.session_id}, proxies = proxies)
+                    #proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=received_from_local, headers={str("Session-Id"): self.session_id}, proxies = proxies)
                     client_timeout = 0
                     client_timestamp = current_timestamp
                   
@@ -73,9 +73,9 @@ class ClientConnectionThread(threading.Thread):
                     print(f"Client {self.client_address} disconnected. Timeout {CLIENT_TIMEOUT} seconds.")
                     break
                 
-                received_messages = None
-                if proxy_response:
-                    received_messages = str(proxy_response.content, "utf8")
+                #received_messages = None
+                #if proxy_response:
+                received_messages = str(proxy_response.content, "utf8")
                 
                 if received_messages and received_messages != b'':
                     print(f"Received message packet from PROXY: {received_messages}")

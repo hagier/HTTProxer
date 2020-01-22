@@ -19,7 +19,7 @@ import traceback
 BIND_ADDRESS = '0.0.0.0'
 BIND_PORT = 8080
 
-REMOTE_ADDRESS = '10.6.7.66'
+REMOTE_ADDRESS = '127.0.0.1'
 REMOTE_PORT = 22
 
 class ServerConnectionThread(threading.Thread):
