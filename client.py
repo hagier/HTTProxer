@@ -33,7 +33,7 @@ class ClientConnectionThread(threading.Thread):
         self.client_socket = client_socket
         self.client_address = client_address
         self.session_id = str(uuid.uuid1())
-        #print("Initiated ClientConnectionThread.")
+        print(f"Initiated ClientConnectionThread for {client_address}.")
          
     def run(self):
         print(f"Starting HTTP proxy between {self.client_address} and {SERVER_ADDRESS}:{SERVER_PORT}.")
@@ -47,6 +47,8 @@ class ClientConnectionThread(threading.Thread):
         client_timeout = 0
         client_timestamp = time.time()
         
+        session_request = requests.Session()
+        session_request.headers.update({'Session-Id': self.session_id})
         while not self.flag_stop:
             try:   
                 #time.sleep(1)
@@ -56,13 +58,13 @@ class ClientConnectionThread(threading.Thread):
                 proxy_response = None
                 if received_from_local is None:
                     #if (current_timestamp-client_timestamp)/1.0 > client_timeout/CLIENT_TIMEOUT:
-                    proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", headers={str("Session-Id"): self.session_id}, proxies = proxies)
+                    proxy_response = session_request.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", proxies = proxies)
                     if (current_timestamp-client_timestamp) > 1.0:
                         client_timeout += 1
                         client_timestamp = current_timestamp
-                        print(f"Update timestamp {client_timestamp}, count {client_timeout}.")
+                        #print(f"Update timestamp {client_timestamp}, count {client_timeout}.")
                 else:
-                    proxy_response = requests.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=received_from_local, headers={str("Session-Id"): self.session_id}, proxies = proxies)
+                    proxy_response = session_request.post(f"http://{SERVER_ADDRESS}:{SERVER_PORT}/", data=received_from_local, proxies = proxies)
                     client_timeout = 0
                     client_timestamp = current_timestamp
                   
@@ -74,18 +76,18 @@ class ClientConnectionThread(threading.Thread):
                 received_messages = None
                 if proxy_response is not None:
                     received_messages = str(proxy_response.content, "utf8")
-                    print(f"Received: {proxy_response.content}")
+                    #print(f"Received: {proxy_response.content}")
                 
                 if received_messages is not None:
-                    print(f"Received message packet from PROXY: {received_messages}")
+                    #print(f"Received message packet from PROXY: {received_messages}")
                     for message in received_messages.split(';'):
-                        print(f"Message from packet: {message}")
+                        #print(f"Message from packet: {message}")
                         decoded_message = str(base64.b64decode(str(message)))
-                        print(f"DECODED: {decoded_message}")
+                        #print(f"DECODED: {decoded_message}")
                         self.socket_send(self.client_socket, message)
                 
                 
-                time.sleep(0.1)
+                #time.sleep(0.1)
                          
             except socket.timeout:
                 print(f"Client disconnected.")
@@ -124,7 +126,7 @@ class ClientConnectionThread(threading.Thread):
         
         data = b''.join(chunks)
         if data != b'':
-            print(f"\nReceived from local: {data}")
+            #print(f"\nReceived from local: {data}")
             data_encoded = base64.b64encode(data)
             return data_encoded
         return None
@@ -133,7 +135,7 @@ class ClientConnectionThread(threading.Thread):
         #print('Forwarding to ' + str(socket.getpeername()) + ' message: ' + str(message))
         if message != b'':
             message_decoded = base64.b64decode(message)
-            print('\nForwarding to ' + str(socket.getpeername()) + ' message: ' + str(message_decoded))
+            #print('\nForwarding to ' + str(socket.getpeername()) + ' message: ' + str(message_decoded))
             socket.settimeout(5)
             socket.sendall(message_decoded)
  
